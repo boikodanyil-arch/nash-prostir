@@ -1,0 +1,25 @@
+# Не дає безкоштовній базі Supabase заснути: тричі на тиждень робить простий запит.
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "17 8 * * 1,3,5"   # пн, ср, пт о 08:17 UTC
+  workflow_dispatch:           # можна запустити вручну на вкладці Actions
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query the database
+        env:
+          SUPABASE_URL: https://zlnrpanpnnbbfcckqhrg.supabase.co
+          SUPABASE_KEY: sb_publishable_Fan73wbXMFx4ql7Pu8Bm6Q_2TuvxEuB
+        run: |
+          curl --fail --silent --show-error --retry 3 --retry-delay 15 \
+            "$SUPABASE_URL/rest/v1/rooms?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY"
+          echo
+          echo "OK"
