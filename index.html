@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F3FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12102A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Наш простір">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Наш простір</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700;800&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F3FA; --ink:#15122E; --muted:#66627F; --line:#DAD7EB;
+  --me:#3D4DFF; --her:#FF5C6C; --sun:#FFD84D; --on-sun:#15122E; --on-her:#15122E;
+  --display:"Unbounded","Onest",system-ui,sans-serif;
+  --body:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --tabs-h:68px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#12102A; --ink:#F3F1FF; --muted:#A9A5C8; --line:#2B2751; --me:#7B86FF; --her:#FF7A87; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.4;
+  min-height:100vh;padding-top:env(safe-area-inset-top);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:3px solid var(--me);outline-offset:2px;border-radius:6px}
+.wrap{max-width:520px;margin:0 auto;padding:18px 20px calc(var(--tabs-h) + env(safe-area-inset-bottom) + 28px)}
+.wrap.with-composer{padding-bottom:calc(var(--tabs-h) + env(safe-area-inset-bottom) + 150px)}
+.noapp .wrap{padding-bottom:calc(env(safe-area-inset-bottom) + 32px)}
+.noapp .tabs{display:none}
+
+.wordmark{font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:-.02em;margin:0 0 6px}
+.h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,8.5vw,38px);letter-spacing:-.04em;line-height:1.05;margin:6px 0 4px}
+.lede{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:34ch}
+
+.status{border-left:4px solid var(--sun);padding:6px 0 6px 12px;margin:0 0 18px;font-size:14px;color:var(--muted);max-width:44ch}
+.status.err{border-color:var(--her);color:var(--ink)}
+
+.hero{margin:10px -6px 0}
+.hero svg{display:block;width:100%;height:auto;overflow:visible}
+.hero text{font-family:var(--display)}
+.since{font-size:17px;margin:10px 0 0;font-weight:500}
+.since small{display:block;color:var(--muted);font-size:14px;font-weight:400;margin-top:2px}
+.legend{display:flex;gap:18px;margin:16px 0 4px;font-size:14px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:8px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
+.dot.me{background:var(--me)} .dot.her{background:var(--her)}
+
+.block{margin-top:30px}
+.block h2{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:-.02em;margin:0 0 12px}
+.next{padding:14px 0;border-top:1px solid var(--line)}
+.next .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.next .name{font-weight:600}
+.next .when{color:var(--muted);font-size:14px}
+.next .left{font-family:var(--display);font-weight:700;font-size:15px;white-space:nowrap}
+.bar{height:8px;border-radius:4px;background:var(--line);margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--me);border-radius:4px}
+
+.jump{display:flex;align-items:center;width:100%;min-height:56px;border-top:1px solid var(--line);text-align:left;gap:12px}
+.jump:last-of-type{border-bottom:1px solid var(--line)}
+.jump .lbl{flex:1;font-weight:500}
+.jump .n{font-family:var(--display);font-weight:700;font-size:18px}
+.jump svg{width:20px;height:20px;stroke:var(--muted)}
+
+.invite{border-top:1px solid var(--line);padding-top:16px}
+.invite .code{font-family:var(--display);font-weight:800;font-size:clamp(26px,8vw,34px);letter-spacing:.06em;margin:2px 0 6px;word-break:keep-all}
+.invite p{margin:0 0 12px;color:var(--muted);font-size:14px;max-width:42ch}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.linkbtn{color:var(--muted);font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:44px;margin-top:6px}
+
+.setup label{display:block;font-weight:600;margin:6px 0 8px}
+.field{width:100%;min-height:56px;padding:0 16px;border:2px solid var(--ink);border-radius:12px;background:transparent;font-size:18px}
+.field:focus{outline:3px solid var(--me);outline-offset:2px}
+.field.code{text-transform:uppercase;letter-spacing:.12em;font-family:var(--display);font-weight:700;text-align:center}
+.btn{min-height:56px;padding:0 24px;border-radius:12px;background:var(--ink);color:var(--paper);font-weight:700;font-size:17px}
+.btn.full{width:100%;margin-top:12px}
+.btn.small{min-height:48px;padding:0 18px;font-size:16px}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.55;cursor:default}
+
+.loading{display:grid;place-items:center;align-content:center;min-height:55vh;gap:18px;color:var(--muted);font-size:15px}
+.loading p{margin:0}
+.pair{display:flex;align-items:center}
+.pair i{width:30px;height:30px;border-radius:50%;display:block}
+.pair i:first-child{background:var(--me)}
+.pair i:last-child{background:var(--her);animation:pull 1.4s ease-in-out infinite}
+@keyframes pull{0%,100%{transform:translateX(16px)}50%{transform:translateX(-8px)}}
+
+.list{margin:6px 0 0}
+.sec{font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:-.01em;color:var(--muted);margin:26px 0 4px}
+.row{display:grid;grid-template-columns:4px 48px 1fr 48px;align-items:center;min-height:66px;border-bottom:1px solid var(--line);column-gap:4px}
+.row .by{align-self:stretch;margin:12px 0;border-radius:2px}
+.row .by.me{background:var(--me)} .row .by.her{background:var(--her)}
+.chk{width:48px;height:48px;display:grid;place-items:center}
+.chk i{width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;transition:background .15s,transform .15s}
+.chk svg{width:16px;height:16px;stroke:var(--paper);stroke-width:3;opacity:0;transition:opacity .15s}
+.done .chk i{background:var(--ink)} .done .chk svg{opacity:1}
+.chk:active i{transform:scale(.88)}
+.txt{min-width:0;padding:10px 0}
+.txt b{display:block;font-weight:500;word-break:break-word;overflow-wrap:anywhere}
+.done .txt b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
+.meta{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted);margin-top:2px}
+.meta .as{color:var(--ink);font-weight:600}
+.del{width:48px;height:48px;display:grid;place-items:center}
+.del svg{width:18px;height:18px;stroke:var(--muted)}
+.empty{padding:28px 0 8px}
+.empty p{margin:0 0 6px;max-width:32ch}
+.empty .big{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.03em;line-height:1.2}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{min-height:44px;padding:0 16px;border:2px solid var(--ink);border-radius:999px;font-size:15px;font-weight:500}
+.chip:active{background:var(--sun);color:var(--on-sun);border-color:var(--sun)}
+.sweep{margin-top:18px}
+
+.roller{background:var(--her);color:var(--on-her);border-radius:16px;padding:22px 20px;margin:4px 0 8px}
+.roller .small{font-size:14px;font-weight:600;margin:0 0 8px}
+.roller .pick{font-family:var(--display);font-weight:700;font-size:clamp(22px,6.4vw,28px);letter-spacing:-.03em;line-height:1.15;min-height:2.4em;word-break:break-word}
+.roller .acts{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.roller .btn{background:var(--ink);color:var(--paper);min-height:48px;padding:0 18px;font-size:16px}
+.roller .btn.ghost{background:transparent;color:var(--on-her);border-color:var(--on-her)}
+.rollstart{width:100%;min-height:64px;border-radius:16px;background:var(--her);color:var(--on-her);font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.02em;margin:4px 0 8px}
+
+.composer{position:fixed;left:0;right:0;bottom:calc(var(--tabs-h) + env(safe-area-inset-bottom));background:var(--paper);border-top:1px solid var(--line);padding:10px 20px 12px;z-index:4}
+.composer .in{max-width:520px;margin:0 auto}
+.seg{display:flex;gap:6px;margin-bottom:8px}
+.seg button{flex:1;min-height:44px;border:2px solid var(--line);border-radius:10px;font-size:15px;font-weight:500}
+.seg button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper);font-weight:700}
+.add{display:flex;gap:8px}
+.add .field{flex:1;min-width:0}
+.add .go{width:56px;min-height:56px;border-radius:12px;background:var(--me);display:grid;place-items:center}
+.add .go svg{width:24px;height:24px;stroke:#fff;stroke-width:2.4}
+@media (prefers-color-scheme: dark){ .add .go svg{stroke:#12102A} }
+
+.tabs{position:fixed;left:0;right:0;bottom:0;height:calc(var(--tabs-h) + env(safe-area-inset-bottom));padding:0 10px env(safe-area-inset-bottom);background:var(--paper);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:5}
+.tabs .in{display:flex;width:100%;max-width:520px;gap:4px;align-items:center}
+.tab{flex:1;height:56px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:500;color:var(--muted)}
+.tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-current="page"]{background:var(--ink);color:var(--paper);font-weight:700}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);width:max-content;bottom:calc(var(--tabs-h) + env(safe-area-inset-bottom) + 12px);background:var(--ink);color:var(--paper);border-radius:12px;padding:6px 6px 6px 16px;display:flex;align-items:center;gap:8px;z-index:9;max-width:calc(100vw - 32px);font-size:15px}
+.noapp .toast{bottom:calc(env(safe-area-inset-bottom) + 16px)}
+.toast button{min-height:44px;padding:0 12px;font-weight:700;color:var(--sun)}
+@media (prefers-color-scheme: dark){ .toast button{color:#8A5A00} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="wordmark">Наш простір</div>
+  <div id="status"></div>
+  <main id="view"></main>
+</div>
+<div id="composerHost"></div>
+<div id="toastHost" aria-live="polite"></div>
+<nav class="tabs" aria-label="Розділи"><div class="in" id="tabs"></div></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+
+// ---------- config (публічні значення, безпека тримається на правилах бази) ----------
+var SUPABASE_URL = "https://zlnrpanpnnbbfcckqhrg.supabase.co";
+var SUPABASE_KEY = "sb_publishable_Fan73wbXMFx4ql7Pu8Bm6Q_2TuvxEuB";
+
+// ---------- helpers ----------
+var NS = "http://www.w3.org/2000/svg";
+function h(tag, attrs){
+  var el = document.createElement(tag);
+  attrs = attrs || {};
+  Object.keys(attrs).forEach(function(k){
+    var v = attrs[k];
+    if (k === "class") el.className = v;
+    else if (k.slice(0,2) === "on") el.addEventListener(k.slice(2), v);
+    else if (k === "text") el.textContent = v;
+    else el.setAttribute(k, v);
+  });
+  for (var i = 2; i < arguments.length; i++){
+    var c = arguments[i];
+    if (c == null) continue;
+    el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  return el;
+}
+function s(tag, attrs){
+  var el = document.createElementNS(NS, tag);
+  Object.keys(attrs || {}).forEach(function(k){ el.setAttribute(k, attrs[k]); });
+  for (var i = 2; i < arguments.length; i++) if (arguments[i]) el.appendChild(arguments[i]);
+  return el;
+}
+function icon(paths, extra){
+  var svg = s("svg", Object.assign({viewBox:"0 0 24 24", fill:"none", "stroke-linecap":"round", "stroke-linejoin":"round", "aria-hidden":"true"}, extra || {}));
+  paths.forEach(function(p){
+    if (p.c) svg.appendChild(s("circle", {cx:p.c[0], cy:p.c[1], r:p.c[2]}));
+    else if (p.r) svg.appendChild(s("rect", {x:p.r[0], y:p.r[1], width:p.r[2], height:p.r[3], rx:p.r[4]}));
+    else svg.appendChild(s("path", {d:p}));
+  });
+  return svg;
+}
+var ICONS = {
+  together:[{c:[9,12,6]},{c:[15,12,6]}],
+  shop:["M5 8h14l-1 12H6L5 8z","M9 8V6a3 3 0 0 1 6 0v2"],
+  todo:[{r:[4,4,16,16,4]},"M8.5 12.5l2.5 2.5 4.5-5"],
+  dates:["M11 3c.6 4.2 1.8 5.4 6 6-4.2.6-5.4 1.8-6 6-.6-4.2-1.8-5.4-6-6 4.2-.6 5.4-1.8 6-6z","M18 16v4M16 18h4"],
+  chev:["M9 6l6 6-6 6"], plus:["M12 5v14M5 12h14"], x:["M6 6l12 12M18 6L6 18"], ok:["M5 12.5l4.5 4.5L19 7.5"]
+};
+function uuid(){
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  var b = new Uint8Array(16); crypto.getRandomValues(b);
+  b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+  var x = Array.prototype.map.call(b, function(n){ return ("0" + n.toString(16)).slice(-2); }).join("");
+  return x.slice(0,8) + "-" + x.slice(8,12) + "-" + x.slice(12,16) + "-" + x.slice(16,20) + "-" + x.slice(20);
+}
+function plural(n, f){
+  var a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return f[2];
+  if (b > 1 && b < 5) return f[1];
+  if (b === 1) return f[0];
+  return f[2];
+}
+function parseDate(str){ var p = str.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+function today(){ var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function fmtLong(d){ return d.toLocaleDateString("uk-UA", {day:"numeric", month:"long", year:"numeric"}); }
+function fmtShort(ts){ return new Date(ts).toLocaleDateString("uk-UA", {day:"numeric", month:"short"}); }
+function daysBetween(a, b){ return Math.round((b - a) / 86400000); }
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+function lsDel(k){ try { localStorage.removeItem(k); } catch(e){} }
+var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function prettyCode(c){ c = String(c || ""); return c.length === 8 ? c.slice(0,4) + "-" + c.slice(4) : c; }
+function cleanCode(c){ return String(c || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase(); }
+
+// ---------- state ----------
+var state = {phase:"loading", tab:"together", items:[], room:null, me:null, offline:false, pick:null, assignee:"both", rolling:false, confirmLeave:false};
+var heroPlayed = false;
+var sb = null, channel = null, pending = 0, dirty = false, refetchTimer = null, pollTimer = null;
+var SUGGEST = ["Вечеря в новому місці", "Кіновечір вдома", "Прогулянка на захід сонця", "Приготувати щось разом", "Настільні ігри", "Поїздка на вихідні"];
+var TITLES = {shop:"Купити", todo:"Справи", dates:"Побачення"};
+
+function byType(t){ return state.items.filter(function(i){ return i.type === t; }); }
+function settings(){ return {startDate: (state.room && state.room.start_date) || ""}; }
+function fromRow(r){
+  return {id:r.id, type:r.type, text:r.text, done:!!r.done, assignee:r.assignee, by:r.created_by, at:Date.parse(r.created_at) || Date.now()};
+}
+
+// ---------- toast ----------
+var toastTimer = null;
+function toast(msg, actionLabel, action){
+  var host = document.getElementById("toastHost");
+  host.textContent = "";
+  clearTimeout(toastTimer);
+  var box = h("div", {class:"toast", role:"status"}, h("span", {text:msg}));
+  var composer = document.querySelector(".composer");
+  if (composer && state.phase === "app") box.style.bottom = "calc(" + composer.offsetHeight + "px + var(--tabs-h) + env(safe-area-inset-bottom) + 12px)";
+  if (actionLabel) box.appendChild(h("button", {text:actionLabel, onclick:function(){ host.textContent = ""; action(); }}));
+  else box.style.padding = "12px 16px";
+  host.appendChild(box);
+  toastTimer = setTimeout(function(){ host.textContent = ""; }, 6000);
+}
+
+// ---------- data layer ----------
+function onErr(e){
+  console.log(e);
+  toast("Не вдалося зберегти. Перевір інтернет і спробуй ще раз.");
+}
+async function write(fn){
+  pending++;
+  try {
+    var r = await fn();
+    if (r && r.error) throw r.error;
+  } catch(e){
+    onErr(e);
+    dirty = true;
+  } finally {
+    pending--;
+    if (pending === 0 && dirty){ dirty = false; scheduleRefetch(0); }
+  }
+}
+function save(item){
+  state.items = state.items.filter(function(i){ return i.id !== item.id; }).concat([item]);
+  refresh();
+  var row = {id:item.id, room_id:state.room.id, type:item.type, text:item.text, done:!!item.done,
+             assignee:item.assignee || "both", created_by:item.by, created_at:new Date(item.at).toISOString()};
+  write(function(){ return sb.from("items").insert(row); });
+}
+function setDone(id, done){
+  state.items = state.items.map(function(i){ return i.id === id ? Object.assign({}, i, {done:done}) : i; });
+  refresh();
+  write(function(){ return sb.from("items").update({done:done}).eq("id", id); });
+}
+function remove(id){
+  state.items = state.items.filter(function(i){ return i.id !== id; });
+  write(function(){ return sb.from("items").delete().eq("id", id); });
+}
+function setStartDate(val){
+  state.room = Object.assign({}, state.room, {start_date: val || null});
+  refresh();
+  var id = state.room.id;
+  write(function(){ return sb.from("rooms").update({start_date: val || null}).eq("id", id); });
+}
+
+async function fetchAll(){
+  var id = state.room.id;
+  var res = await Promise.all([
+    sb.from("rooms").select("id,code,start_date").eq("id", id).maybeSingle(),
+    sb.from("items").select("*").eq("room_id", id).order("created_at", {ascending:false}).limit(500)
+  ]);
+  if (res[0].error) throw res[0].error;
+  if (res[1].error) throw res[1].error;
+  if (!res[0].data){ leaveLocal(); return false; }
+  state.room = res[0].data;
+  state.items = (res[1].data || []).map(fromRow);
+  return true;
+}
+function scheduleRefetch(delay){
+  clearTimeout(refetchTimer);
+  refetchTimer = setTimeout(refetch, delay == null ? 200 : delay);
+}
+async function refetch(){
+  if (state.phase !== "app" || !state.room) return;
+  if (pending > 0){ dirty = true; return; }
+  try {
+    var ok = await fetchAll();
+    if (!ok) return;
+    if (state.offline){ state.offline = false; renderStatus(); }
+    if (pending === 0) refresh();
+  } catch(e){
+    console.log(e);
+    if (!state.offline){ state.offline = true; renderStatus(); }
+  }
+}
+function subscribe(){
+  unsubscribe();
+  try {
+    channel = sb.channel("room-" + state.room.id)
+      .on("postgres_changes", {event:"*", schema:"public", table:"items"}, function(){ scheduleRefetch(); })
+      .on("postgres_changes", {event:"*", schema:"public", table:"rooms"}, function(){ scheduleRefetch(); })
+      .subscribe();
+  } catch(e){ console.log(e); }
+  clearInterval(pollTimer);
+  pollTimer = setInterval(function(){ if (!document.hidden) refetch(); }, 30000);
+}
+function unsubscribe(){
+  clearInterval(pollTimer);
+  if (channel){ try { sb.removeChannel(channel); } catch(e){} channel = null; }
+}
+document.addEventListener("visibilitychange", function(){ if (!document.hidden) refetch(); });
+window.addEventListener("online", function(){ refetch(); });
+
+// ---------- rooms ----------
+async function ensureUser(){
+  var r = await sb.auth.getSession();
+  if (r.data && r.data.session) return r.data.session.user;
+  var a = await sb.auth.signInAnonymously();
+  if (a.error) throw a.error;
+  return a.data.user;
+}
+async function findRoom(preferId){
+  var r = await sb.from("rooms").select("id,code,start_date");
+  if (r.error) throw r.error;
+  var rows = r.data || [];
+  var want = preferId || lsGet("nash_room_id");
+  return rows.find(function(x){ return x.id === want; }) || rows[0] || null;
+}
+async function openRoom(room){
+  state.room = room;
+  lsSet("nash_room_id", room.id);
+  lsSet("nash_room_code", room.code);
+  state.items = []; state.offline = false; state.confirmLeave = false; state.tab = "together"; heroPlayed = false;
+  var ok = await fetchAll();
+  if (!ok) return;
+  subscribe();
+  setPhase("app");
+  renderStatus();
+  renderTabs();
+  buildView();
+}
+function leaveLocal(){
+  unsubscribe();
+  lsDel("nash_room_id"); lsDel("nash_room_code");
+  state.room = null; state.items = []; state.confirmLeave = false;
+  setPhase("onboard");
+  renderStatus();
+  renderOnboard();
+}
+async function createRoom(){
+  var r = await sb.rpc("create_room");
+  if (r.error) throw r.error;
+  var room = {id:r.data.id, code:r.data.code, start_date:null};
+  await openRoom(room);
+  toast("Простір створено. Код для половинки внизу екрана.");
+}
+async function joinRoom(code){
+  var r = await sb.rpc("join_room", {p_code: code});
+  if (r.error) throw r.error;
+  var room = await findRoom(r.data);
+  if (!room) throw new Error("room_not_found");
+  await openRoom(room);
+}
+async function leaveRoom(){
+  var id = state.room.id;
+  var r = await sb.from("room_members").delete().eq("room_id", id).eq("user_id", state.me);
+  if (r.error){ onErr(r.error); return; }
+  leaveLocal();
+}
+
+function authErrorText(e){
+  var m = (e && e.message) || "";
+  if (/anonymous/i.test(m)) return "Вхід без реєстрації вимкнений у налаштуваннях бази. Увімкни Anonymous sign-ins у Supabase: Authentication, Sign In / Providers.";
+  return "Не вдалося підключитися. Перевір інтернет і спробуй ще раз.";
+}
+async function boot(){
+  setPhase("loading"); renderStatus(); renderLoading();
+  if (!window.supabase){ return renderError("Не вдалося завантажити застосунок. Перевір інтернет і спробуй ще раз."); }
+  try {
+    if (!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var user = await ensureUser();
+    state.me = user.id;
+  } catch(e){ console.log(e); return renderError(authErrorText(e)); }
+  try {
+    var room = await findRoom();
+    if (!room){
+      var code = lsGet("nash_room_code");
+      if (code){
+        try { await sb.rpc("join_room", {p_code: code}).then(function(r){ if (r.error) throw r.error; }); room = await findRoom(); }
+        catch(e){ if (/room_not_found/.test((e && e.message) || "")){ lsDel("nash_room_code"); lsDel("nash_room_id"); } else throw e; }
+      }
+    }
+    if (room) await openRoom(room);
+    else { setPhase("onboard"); renderOnboard(); }
+  } catch(e){
+    console.log(e);
+    renderError("Не вдалося відкрити простір. Перевір інтернет і спробуй ще раз.");
+  }
+}
+
+// ---------- phases ----------
+var viewEl = document.getElementById("view");
+function setPhase(p){
+  state.phase = p;
+  document.body.classList.toggle("noapp", p !== "app");
+  if (p !== "app") document.getElementById("composerHost").textContent = "";
+}
+function renderStatus(){
+  var box = document.getElementById("status");
+  box.textContent = "";
+  if (state.phase === "app" && state.offline){
+    box.appendChild(h("p", {class:"status", role:"status", text:"Немає зв'язку. Показуємо останні збережені дані, оновимо, щойно інтернет повернеться."}));
+  }
+}
+function renderLoading(){
+  viewEl.textContent = "";
+  viewEl.appendChild(h("div", {class:"loading", role:"status"},
+    h("div", {class:"pair", "aria-hidden":"true"}, h("i"), h("i")),
+    h("p", {text:"Відкриваємо ваш простір"})));
+}
+function renderError(msg){
+  setPhase("error");
+  viewEl.textContent = "";
+  viewEl.appendChild(h("div", null,
+    h("h1", {class:"h1", text:"Не вийшло відкрити"}),
+    h("p", {class:"lede", text:msg}),
+    h("button", {class:"btn full", text:"Спробувати ще раз", onclick:boot})));
+}
+function renderOnboard(){
+  viewEl.textContent = "";
+  var hero = heroSvg(null, false);
+  var wrap = h("div", {class:"setup"});
+  var codeBox = h("div", {style:"display:none"});
+  var err = h("p", {class:"status err", style:"display:none", role:"alert"});
+  var codeInput = h("input", {class:"field code", type:"text", maxlength:"9", autocomplete:"off", autocapitalize:"characters", spellcheck:"false", inputmode:"text", placeholder:"XXXX-XXXX", "aria-label":"Код простору"});
+  var joinBtn = h("button", {class:"btn full", text:"Приєднатися"});
+  var createBtn = h("button", {class:"btn full", text:"Створити простір"});
+  var haveBtn = h("button", {class:"btn ghost full", text:"У мене є код"});
+  function showErr(t){ err.textContent = t; err.style.display = "block"; }
+  createBtn.addEventListener("click", async function(){
+    createBtn.disabled = true; createBtn.textContent = "Створюємо"; err.style.display = "none";
+    try { await createRoom(); }
+    catch(e){ console.log(e); createBtn.disabled = false; createBtn.textContent = "Створити простір"; showErr("Не вдалося створити простір. Перевір інтернет і спробуй ще раз."); }
+  });
+  haveBtn.addEventListener("click", function(){
+    haveBtn.style.display = "none"; codeBox.style.display = "block"; codeInput.focus();
+  });
+  async function doJoin(){
+    var code = cleanCode(codeInput.value);
+    if (code.length !== 8){ showErr("Код складається з 8 символів. Перевір і спробуй ще раз."); codeInput.focus(); return; }
+    joinBtn.disabled = true; joinBtn.textContent = "Приєднуємось"; err.style.display = "none";
+    try { await joinRoom(code); }
+    catch(e){
+      console.log(e);
+      joinBtn.disabled = false; joinBtn.textContent = "Приєднатися";
+      showErr(/room_not_found/.test((e && e.message) || "") ? "Такого коду немає. Перевір його і спробуй ще раз." : "Не вдалося приєднатися. Перевір інтернет і спробуй ще раз.");
+    }
+  }
+  joinBtn.addEventListener("click", doJoin);
+  codeInput.addEventListener("keydown", function(e){ if (e.key === "Enter") doJoin(); });
+  codeBox.appendChild(h("label", {for:"codeIn", style:"display:none"}));
+  codeBox.appendChild(codeInput);
+  codeBox.appendChild(joinBtn);
+  wrap.appendChild(h("h1", {class:"h1", text:"Ваш простір на двох"}));
+  wrap.appendChild(h("p", {class:"lede", text:"Покупки, справи, ідеї побачень і лічильник днів. Усе спільне й оновлюється в обох одразу."}));
+  wrap.appendChild(createBtn);
+  wrap.appendChild(haveBtn);
+  wrap.appendChild(codeBox);
+  wrap.appendChild(err);
+  viewEl.appendChild(h("div", {class:"hero"}, hero.svg));
+  viewEl.appendChild(wrap);
+}
+
+// ---------- tabs ----------
+var TABS = [{id:"together", label:"Разом"}, {id:"shop", label:"Купити"}, {id:"todo", label:"Справи"}, {id:"dates", label:"Побачення"}];
+function renderTabs(){
+  var nav = document.getElementById("tabs");
+  nav.textContent = "";
+  TABS.forEach(function(t){
+    var b = h("button", {class:"tab", onclick:function(){ go(t.id); }}, icon(ICONS[t.id]), h("span", {text:t.label}));
+    if (state.tab === t.id) b.setAttribute("aria-current", "page");
+    nav.appendChild(b);
+  });
+}
+function go(tab){
+  state.tab = tab;
+  document.getElementById("toastHost").textContent = "";
+  renderTabs();
+  buildView();
+  window.scrollTo(0, 0);
+}
+
+// ---------- views ----------
+var listEl = null, togetherEl = null;
+function buildView(){
+  if (state.phase !== "app") return;
+  viewEl.textContent = "";
+  listEl = null; togetherEl = null;
+  var host = document.getElementById("composerHost");
+  host.textContent = "";
+  document.getElementById("wrap").classList.toggle("with-composer", state.tab !== "together");
+  if (state.tab === "together"){
+    togetherEl = h("div");
+    viewEl.appendChild(togetherEl);
+  } else {
+    var sub = state.tab === "shop" ? "Один список на двох. Що купили, те й відмічайте." :
+              state.tab === "todo" ? "Хто що робить, видно одразу." : "Складайте ідеї, а коли не можете обрати, киньте жереб.";
+    viewEl.appendChild(h("h1", {class:"h1", text:TITLES[state.tab]}));
+    viewEl.appendChild(h("p", {class:"lede", text:sub}));
+    if (state.tab === "dates") viewEl.appendChild(h("div", {id:"rollbox"}));
+    listEl = h("div", {class:"list"});
+    viewEl.appendChild(listEl);
+    host.appendChild(composer(state.tab));
+  }
+  refresh();
+}
+
+function composer(type){
+  var label = type === "shop" ? "Що купити" : type === "todo" ? "Яку справу додати" : "Нова ідея";
+  var input = h("input", {class:"field", type:"text", maxlength:"120", enterkeyhint:"done", placeholder:label, "aria-label":label});
+  var wrap = h("div", {class:"in"});
+  if (type === "todo"){
+    var seg = h("div", {class:"seg", role:"group", "aria-label":"Кому справа"});
+    [["both","Разом"],["author","Мені"],["other","Половинці"]].forEach(function(o){
+      var b = h("button", {text:o[1], "aria-pressed":state.assignee === o[0] ? "true" : "false", onclick:function(){
+        state.assignee = o[0];
+        Array.prototype.forEach.call(seg.children, function(c){ c.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+      }});
+      seg.appendChild(b);
+    });
+    wrap.appendChild(seg);
+  }
+  function submit(){
+    var text = input.value.trim();
+    if (!text){ input.focus(); return; }
+    var item = {id:uuid(), type:type, text:text, done:false, by:state.me, at:Date.now()};
+    if (type === "todo") item.assignee = state.assignee;
+    save(item);
+    input.value = "";
+    input.focus();
+  }
+  input.addEventListener("keydown", function(e){ if (e.key === "Enter") submit(); });
+  wrap.appendChild(h("div", {class:"add"}, input, h("button", {class:"go", "aria-label":"Додати", onclick:submit}, icon(ICONS.plus))));
+  return h("div", {class:"composer"}, wrap);
+}
+
+function authorClass(it){ return it.by === state.me ? "me" : "her"; }
+function authorName(it){ return it.by === state.me ? "Ти" : "Половинка"; }
+function assigneeLabel(it){
+  if (!it.assignee || it.assignee === "both") return "Разом";
+  return (it.assignee === "author") === (it.by === state.me) ? "Мені" : "Половинці";
+}
+function removeWithUndo(items){
+  items.forEach(function(i){ remove(i.id); });
+  refresh();
+  toast(items.length === 1 ? "Видалено" : "Прибрано: " + items.length, "Повернути", function(){
+    items.forEach(function(i){ save(i); });
+  });
+}
+function rowFor(it, type){
+  var meta = h("div", {class:"meta"});
+  if (type === "todo") meta.appendChild(h("span", {class:"as", text:assigneeLabel(it)}));
+  meta.appendChild(h("span", {text:authorName(it) + ", " + fmtShort(it.at)}));
+  var chk = h("button", {class:"chk", role:"checkbox", "aria-checked":it.done ? "true" : "false", "aria-label":(it.done ? "Повернути в список: " : "Відмітити: ") + it.text,
+    onclick:function(){ setDone(it.id, !it.done); }}, h("i", null, icon(ICONS.ok)));
+  return h("div", {class:"row" + (it.done ? " done" : "")},
+    h("span", {class:"by " + authorClass(it), "aria-hidden":"true"}),
+    chk,
+    h("div", {class:"txt"}, h("b", {text:it.text}), meta),
+    h("button", {class:"del", "aria-label":"Видалити: " + it.text, onclick:function(){ removeWithUndo([it]); }}, icon(ICONS.x, {"stroke-width":"2"})));
+}
+
+function renderList(){
+  if (!listEl) return;
+  var type = state.tab;
+  var all = byType(type).sort(function(a, b){ return b.at - a.at; });
+  var open = all.filter(function(i){ return !i.done; });
+  var done = all.filter(function(i){ return i.done; });
+  listEl.textContent = "";
+  if (!all.length){
+    var e = h("div", {class:"empty"});
+    if (type === "shop"){
+      e.appendChild(h("div", {class:"big", text:"Список порожній"}));
+      e.appendChild(h("p", {text:"Запишіть, що треба купити, і список з'явиться в обох."}));
+    } else if (type === "todo"){
+      e.appendChild(h("div", {class:"big", text:"Справ немає"}));
+      e.appendChild(h("p", {text:"Додайте першу і вкажіть, хто її робить."}));
+    } else {
+      e.appendChild(h("div", {class:"big", text:"Ідей поки немає"}));
+      e.appendChild(h("p", {text:"Додайте свою або почніть з готових."}));
+      var chips = h("div", {class:"chips"});
+      SUGGEST.forEach(function(t){
+        chips.appendChild(h("button", {class:"chip", text:t, onclick:function(){
+          save({id:uuid(), type:"dates", text:t, done:false, by:state.me, at:Date.now()});
+        }}));
+      });
+      e.appendChild(chips);
+    }
+    listEl.appendChild(e);
+  } else {
+    open.forEach(function(it){ listEl.appendChild(rowFor(it, type)); });
+    if (done.length){
+      listEl.appendChild(h("div", {class:"sec", text: type === "dates" ? "Вже були: " + done.length : "Зроблено: " + done.length}));
+      done.forEach(function(it){ listEl.appendChild(rowFor(it, type)); });
+      if (type !== "dates"){
+        listEl.appendChild(h("button", {class:"linkbtn sweep", text:"Прибрати зроблене", onclick:function(){ removeWithUndo(done); }}));
+      }
+    }
+  }
+  if (type === "dates") renderRoller();
+}
+
+// ---------- roller ----------
+function renderRoller(){
+  var box = document.getElementById("rollbox");
+  if (!box) return;
+  box.textContent = "";
+  var open = byType("dates").filter(function(i){ return !i.done; });
+  if (!open.length) return;
+  var chosen = state.pick && open.find(function(i){ return i.id === state.pick; });
+  if (!chosen && !state.rolling){
+    box.appendChild(h("button", {class:"rollstart", text:"Кинути жереб", onclick:function(){ roll(); }}));
+    return;
+  }
+  var pickEl = h("div", {class:"pick", "aria-live":"polite", text: chosen ? chosen.text : ""});
+  var acts = h("div", {class:"acts"});
+  if (!state.rolling && chosen){
+    acts.appendChild(h("button", {class:"btn", text:"Робимо", onclick:function(){ state.pick = null; setDone(chosen.id, true); }}));
+    acts.appendChild(h("button", {class:"btn ghost", text:"Інша ідея", onclick:function(){ roll(); }}));
+  }
+  box.appendChild(h("div", {class:"roller"}, h("p", {class:"small", text: state.rolling ? "Обираємо" : "Вибір випав на це"}), pickEl, acts));
+  box._pickEl = pickEl;
+}
+function roll(){
+  var open = byType("dates").filter(function(i){ return !i.done; });
+  if (!open.length) return;
+  var final = open[Math.floor(Math.random() * open.length)];
+  if (open.length > 1){
+    var g = 0;
+    while (final.id === state.pick && g++ < 20) final = open[Math.floor(Math.random() * open.length)];
+  }
+  if (reduce){ state.pick = final.id; renderRoller(); return; }
+  state.rolling = true; state.pick = null;
+  renderRoller();
+  var box = document.getElementById("rollbox");
+  var n = 0, steps = 14;
+  (function tick(){
+    var el = box && box._pickEl;
+    if (!el || state.tab !== "dates"){ state.rolling = false; return; }
+    if (n >= steps){ state.rolling = false; state.pick = final.id; renderRoller(); return; }
+    var cur = byType("dates").filter(function(i){ return !i.done; });
+    if (cur.length) el.textContent = cur[Math.floor(Math.random() * cur.length)].text;
+    n++;
+    setTimeout(tick, 60 + n * 14);
+  })();
+}
+
+// ---------- together ----------
+function heroSvg(days, animate){
+  var R = 112, CY = 125, AX = 126, BX = 234;
+  var svg = s("svg", {viewBox:"0 0 360 250", role:"img", "aria-label": days == null ? "Два кола, ще не поєднані" : days + " " + plural(days, ["день", "дні", "днів"]) + " разом"});
+  var clip = s("clipPath", {id:"clipA"}, s("circle", {id:"cA", cx:AX, cy:CY, r:R}));
+  svg.appendChild(s("defs", {}, clip));
+  var vA = s("circle", {cx:AX, cy:CY, r:R, fill:"var(--me)"});
+  var vB = s("circle", {cx:BX, cy:CY, r:R, fill:"var(--her)"});
+  var lens = s("circle", {cx:BX, cy:CY, r:R, fill:"var(--sun)", "clip-path":"url(#clipA)"});
+  svg.appendChild(vA); svg.appendChild(vB);
+  var cA = clip.firstChild;
+  var num = s("text", {x:180, y:118, "text-anchor":"middle", "dominant-baseline":"central", fill:"var(--on-sun)", "font-weight":"800"});
+  var word = s("text", {x:180, y:158, "text-anchor":"middle", "dominant-baseline":"central", fill:"var(--on-sun)", "font-weight":"700", "font-size":"13"});
+  if (days == null){
+    svg.setAttribute("viewBox", "0 0 360 190");
+    [vA, vB].forEach(function(c){ c.setAttribute("r", 78); c.setAttribute("cy", 95); });
+    vA.setAttribute("cx", 96); vB.setAttribute("cx", 264);
+    return {svg:svg, play:function(){}};
+  }
+  svg.appendChild(lens); svg.appendChild(num); svg.appendChild(word);
+  var size = days < 100 ? 54 : days < 1000 ? 40 : 30;
+  num.setAttribute("font-size", size);
+  word.textContent = plural(days, ["день", "дні", "днів"]);
+  function frame(t){
+    var e = 1 - Math.pow(1 - t, 3);
+    var ax = 60 + (AX - 60) * e, bx = 300 + (BX - 300) * e;
+    vA.setAttribute("cx", ax); cA.setAttribute("cx", ax);
+    vB.setAttribute("cx", bx); lens.setAttribute("cx", bx);
+    lens.setAttribute("opacity", Math.min(1, e * 1.4));
+    num.textContent = String(Math.round(days * e));
+    word.setAttribute("opacity", e);
+  }
+  frame(animate && !reduce ? 0 : 1);
+  function fit(){
+    try {
+      var cur = num.textContent;
+      num.textContent = String(days);
+      num.setAttribute("font-size", size);
+      var w = num.getComputedTextLength();
+      if (w > 100) num.setAttribute("font-size", (size * 100 / w).toFixed(1));
+      num.textContent = cur;
+    } catch(e){}
+  }
+  return {svg:svg, fit:fit, play:function(){
+    if (!animate || reduce) return;
+    var t0 = null;
+    function step(ts){
+      if (t0 == null) t0 = ts;
+      var t = Math.min(1, (ts - t0) / 1300);
+      frame(t);
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }};
+}
+
+function copyText(text){
+  function fallback(){
+    try {
+      var ta = h("textarea", {style:"position:fixed;opacity:0;top:0"}); ta.value = text;
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+      return true;
+    } catch(e){ return false; }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text).then(function(){ return true; }, function(){ return fallback(); });
+  }
+  return Promise.resolve(fallback());
+}
+function inviteBlock(){
+  var code = prettyCode(state.room.code);
+  var box = h("section", {class:"block invite"}, h("h2", {text:"Запросити половинку"}));
+  box.appendChild(h("div", {class:"code", "aria-label":"Код простору " + code, text:code}));
+  box.appendChild(h("p", {text:"Половинка відкриває цей застосунок, натискає «У мене є код» і вводить його. Якщо додасте іконку на головний екран, на першому запуску код доведеться ввести ще раз."}));
+  var row = h("div", {class:"btnrow"});
+  row.appendChild(h("button", {class:"btn small", text:"Скопіювати код", onclick:function(){
+    copyText(state.room.code).then(function(ok){ toast(ok ? "Код скопійовано" : "Не вдалося скопіювати. Перепиши код вручну."); });
+  }}));
+  if (navigator.share){
+    row.appendChild(h("button", {class:"btn small ghost", text:"Поділитися", onclick:function(){
+      var url = location.href.split("#")[0];
+      navigator.share({title:"Наш простір", text:"Заходь у наш простір. Код: " + code, url:url}).catch(function(){});
+    }}));
+  }
+  box.appendChild(row);
+  if (!state.confirmLeave){
+    box.appendChild(h("button", {class:"linkbtn", text:"Вийти з простору", onclick:function(){ state.confirmLeave = true; refresh(); }}));
+  } else {
+    box.appendChild(h("p", {style:"margin-top:14px", text:"Вийти з простору? Доступ повернеться тільки за кодом. Записи залишаться в половинки."}));
+    box.appendChild(h("div", {class:"btnrow"},
+      h("button", {class:"btn small", text:"Вийти", onclick:function(){ leaveRoom(); }}),
+      h("button", {class:"btn small ghost", text:"Залишитись", onclick:function(){ state.confirmLeave = false; refresh(); }})));
+  }
+  return box;
+}
+
+var setupRendered = false;
+function renderTogether(){
+  if (!togetherEl) return;
+  var st = settings();
+  if (!st.startDate){
+    if (setupRendered && togetherEl.contains(document.activeElement)) return;
+    setupRendered = true;
+    togetherEl.textContent = "";
+    var hero = heroSvg(null, false);
+    togetherEl.appendChild(h("div", {class:"hero"}, hero.svg));
+    var date = h("input", {class:"field", type:"date", id:"startDate"});
+    date.max = new Date().toISOString().slice(0, 10);
+    var err = h("p", {class:"status err", style:"display:none", text:"Обери дату, яка вже була."});
+    togetherEl.appendChild(h("div", {class:"setup"},
+      h("h1", {class:"h1", text:"Коли все почалося?"}),
+      h("p", {class:"lede", text:"Обери дату, і ми порахуємо дні та підкажемо найближчі пам'ятні дати."}),
+      h("label", {for:"startDate", text:"Дата початку"}),
+      date, err,
+      h("button", {class:"btn full", text:"Почати відлік", onclick:function(){
+        if (!date.value || parseDate(date.value) > today()){ err.style.display = "block"; return; }
+        heroPlayed = false;
+        setStartDate(date.value);
+      }})));
+    togetherEl.appendChild(inviteBlock());
+    return;
+  }
+  setupRendered = false;
+  var start = parseDate(st.startDate), t = today();
+  var days = Math.max(0, daysBetween(start, t));
+
+  var years = t.getFullYear() - start.getFullYear();
+  var months = t.getMonth() - start.getMonth();
+  if (t.getDate() < start.getDate()) months--;
+  if (months < 0){ years--; months += 12; }
+  years = Math.max(0, years);
+  var parts = [];
+  if (years) parts.push(years + " " + plural(years, ["рік", "роки", "років"]));
+  if (months) parts.push(months + " " + plural(months, ["місяць", "місяці", "місяців"]));
+
+  var nm = new Date(t.getFullYear(), t.getMonth(), start.getDate());
+  if (nm <= t) nm = new Date(t.getFullYear(), t.getMonth() + 1, start.getDate());
+  var toMonth = daysBetween(t, nm);
+  var nextHundred = (Math.floor(days / 100) + 1) * 100;
+  var prevHundred = nextHundred - 100;
+  var toHundred = nextHundred - days;
+  var pct = Math.round(((days - prevHundred) / 100) * 100);
+  var hundredDate = new Date(start.getFullYear(), start.getMonth(), start.getDate() + nextHundred);
+
+  togetherEl.textContent = "";
+  var hero = heroSvg(days, !heroPlayed);
+  togetherEl.appendChild(h("div", {class:"hero"}, hero.svg));
+  var since = h("p", {class:"since"}, "Разом з " + fmtLong(start));
+  if (parts.length) since.appendChild(h("small", {text:parts.join(" ")}));
+  togetherEl.appendChild(since);
+  togetherEl.appendChild(h("div", {class:"legend"},
+    h("span", null, h("i", {class:"dot me"}), "Ти"), h("span", null, h("i", {class:"dot her"}), "Половинка")));
+
+  var left = function(n){ return n + " " + plural(n, ["день", "дні", "днів"]); };
+  var up = h("section", {class:"block"}, h("h2", {text:"Найближче"}));
+  up.appendChild(h("div", {class:"next"},
+    h("div", {class:"top"}, h("div", null, h("div", {class:"name", text:nextHundred + "-й день разом"}), h("div", {class:"when", text:fmtLong(hundredDate)})), h("div", {class:"left", text:"ще " + left(toHundred)})),
+    h("div", {class:"bar", role:"progressbar", "aria-valuemin":"0", "aria-valuemax":"100", "aria-valuenow":String(pct), "aria-label":"Прогрес до " + nextHundred + "-го дня"}, h("i", {style:"width:" + pct + "%"}))));
+  up.appendChild(h("div", {class:"next"},
+    h("div", {class:"top"}, h("div", null, h("div", {class:"name", text:"Місячниця"}), h("div", {class:"when", text:fmtLong(nm)})), h("div", {class:"left", text:"ще " + left(toMonth)}))));
+  togetherEl.appendChild(up);
+
+  var cnt = function(t){ return byType(t).filter(function(i){ return !i.done; }).length; };
+  var jumps = h("section", {class:"block"}, h("h2", {text:"Зараз у списках"}));
+  [["shop","Купити"],["todo","Справи"],["dates","Побачення"]].forEach(function(r){
+    jumps.appendChild(h("button", {class:"jump", onclick:function(){ go(r[0]); }},
+      h("span", {class:"lbl", text:r[1]}), h("span", {class:"n", text:String(cnt(r[0]))}), icon(ICONS.chev, {"stroke-width":"2"})));
+  });
+  togetherEl.appendChild(jumps);
+  togetherEl.appendChild(inviteBlock());
+  togetherEl.appendChild(h("button", {class:"linkbtn", text:"Змінити дату початку", onclick:function(){ setStartDate(""); }}));
+
+  if (hero.fit){
+    hero.fit();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(hero.fit);
+  }
+  if (!heroPlayed){ heroPlayed = true; hero.play(); }
+}
+
+function refresh(){
+  if (state.phase !== "app") return;
+  if (state.tab === "together") renderTogether(); else renderList();
+}
+
+window.__app = {state:state, refetch:refetch};
+boot();
+})();
+</script>
+</body>
+</html>
