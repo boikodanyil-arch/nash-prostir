@@ -73,6 +73,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .jump .n{font-family:var(--display);font-weight:700;font-size:18px}
 .jump svg{width:20px;height:20px;stroke:var(--muted)}
 
+.notify p{margin:0 0 12px;color:var(--muted);font-size:14px;max-width:42ch}
 .invite{border-top:1px solid var(--line);padding-top:16px}
 .invite .code{font-family:var(--display);font-weight:800;font-size:clamp(26px,8vw,34px);letter-spacing:.06em;margin:2px 0 6px;word-break:keep-all}
 .invite p{margin:0 0 12px;color:var(--muted);font-size:14px;max-width:42ch}
@@ -385,6 +386,7 @@ async function openRoom(room){
   renderStatus();
   renderTabs();
   buildView();
+  checkPush();
 }
 function leaveLocal(){
   unsubscribe();
@@ -772,6 +774,95 @@ function copyText(text){
   }
   return Promise.resolve(fallback());
 }
+// ---------- push notifications ----------
+var push = {status:"checking", busy:false};
+function pushSupported(){
+  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+}
+function isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+function isStandalone(){ return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
+function b64ToU8(b64){
+  var pad = "=".repeat((4 - b64.length % 4) % 4);
+  var raw = atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  var out = new Uint8Array(raw.length);
+  for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+function swReady(){
+  if (!("serviceWorker" in navigator)) return Promise.reject(new Error("no_sw"));
+  return navigator.serviceWorker.register("sw.js").then(function(){ return navigator.serviceWorker.ready; });
+}
+async function checkPush(){
+  try {
+    if (!pushSupported()){ push.status = (isIOS() && !isStandalone()) ? "ios-install" : "unsupported"; return; }
+    if (Notification.permission === "denied"){ push.status = "denied"; return; }
+    var reg = await swReady();
+    var sub = await reg.pushManager.getSubscription();
+    if (sub && Notification.permission === "granted"){
+      push.status = "on";
+      saveSub(sub);
+    } else push.status = "off";
+  } catch(e){ console.log(e); push.status = "unsupported"; }
+  finally { refresh(); }
+}
+function saveSub(sub){
+  var j = sub.toJSON();
+  if (!state.room || !j.keys) return Promise.resolve();
+  return sb.rpc("push_subscribe", {p_room: state.room.id, p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth});
+}
+async function enablePush(){
+  if (push.busy) return;
+  push.busy = true; refresh();
+  try {
+    var perm = await Notification.requestPermission();
+    if (perm !== "granted"){ push.status = perm === "denied" ? "denied" : "off"; return; }
+    var k = await sb.rpc("push_public_key");
+    if (k.error || !k.data) throw (k.error || new Error("no_key"));
+    var reg = await swReady();
+    var sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64ToU8(k.data)});
+    var r = await saveSub(sub);
+    if (r && r.error) throw r.error;
+    push.status = "on";
+    toast("Сповіщення увімкнено");
+  } catch(e){
+    console.log(e);
+    toast("Не вдалося увімкнути сповіщення. Спробуй ще раз.");
+  } finally { push.busy = false; refresh(); }
+}
+async function disablePush(){
+  if (push.busy) return;
+  push.busy = true; refresh();
+  try {
+    var reg = await swReady();
+    var sub = await reg.pushManager.getSubscription();
+    if (sub){
+      var ep = sub.endpoint;
+      await sb.rpc("push_unsubscribe", {p_endpoint: ep});
+      await sub.unsubscribe();
+    }
+    push.status = "off";
+  } catch(e){ console.log(e); toast("Не вдалося вимкнути. Спробуй ще раз."); }
+  finally { push.busy = false; refresh(); }
+}
+function pushBlock(){
+  var st = push.status;
+  if (st === "checking" || st === "unsupported") return document.createDocumentFragment();
+  var box = h("section", {class:"block notify"}, h("h2", {text:"Сповіщення"}));
+  if (st === "ios-install"){
+    box.appendChild(h("p", {text:"На iPhone сповіщення працюють, коли застосунок додано на головний екран. Натисни «Поділитися», потім «На початковий екран», і відкрий іконку звідти."}));
+  } else if (st === "denied"){
+    box.appendChild(h("p", {text:"Сповіщення заборонені для цього сайту. Дозволь їх у налаштуваннях браузера або телефону."}));
+  } else if (st === "on"){
+    box.appendChild(h("p", {text:"Увімкнено. Ти побачиш, коли половинка додасть щось нове."}));
+    box.appendChild(h("button", Object.assign({class:"btn small ghost", text:"Вимкнути", onclick:disablePush}, push.busy ? {disabled:""} : {})));
+  } else {
+    box.appendChild(h("p", {text:"Дізнавайся одразу, коли половинка додає покупку, справу чи ідею для побачення."}));
+    box.appendChild(h("button", Object.assign({class:"btn small", text:"Увімкнути сповіщення", onclick:enablePush}, push.busy ? {disabled:""} : {})));
+  }
+  return box;
+}
+
 function inviteBlock(){
   var code = prettyCode(state.room.code);
   var box = h("section", {class:"block invite"}, h("h2", {text:"Запросити половинку"}));
@@ -872,6 +963,7 @@ function renderTogether(){
       h("span", {class:"lbl", text:r[1]}), h("span", {class:"n", text:String(cnt(r[0]))}), icon(ICONS.chev, {"stroke-width":"2"})));
   });
   togetherEl.appendChild(jumps);
+  togetherEl.appendChild(pushBlock());
   togetherEl.appendChild(inviteBlock());
   togetherEl.appendChild(h("button", {class:"linkbtn", text:"Змінити дату початку", onclick:function(){ setStartDate(""); }}));
 
